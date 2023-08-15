@@ -6,7 +6,9 @@ lsp.ensure_installed({
   'tsserver',
   'eslint',
   'rust_analyzer',
-  'html'
+  'html',
+  'cssls',
+  'jsonls'
 })
 
 -- Fix Undefined global 'vim'
@@ -54,7 +56,6 @@ lsp.on_attach(function(client, bufnr)
   vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
 end)
 
-lsp.setup()
 
 vim.diagnostic.config({
     virtual_text = true
@@ -62,9 +63,41 @@ vim.diagnostic.config({
 
 local nvim_lsp = require("lspconfig")
 
+local null_ls = require('null-ls')
+
+
+local null_opts = lsp.build_options('null-ls', {
+  on_attach = function(client)
+    if client.server_capabilities.documentFormattingProvider then
+      vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({ name = 'null-ls' })")
+    end
+  end,
+})
+
+
+local formatting = null_ls.builtins.formatting
+local lint = null_ls.builtins.diagnostics
+local action = null_ls.builtins.code_actions
+
+null_ls.setup({
+  on_attach = null_opts.on_attach,
+  sources = {
+    -- formatting
+    formatting.prettier,
+    formatting.stylua, -- Lua
+
+    -- linting
+    lint.eslint,
+    lint.credo, -- Elixir
+    lint.rubocop, -- Ruby
+
+    -- code actions
+    action.eslint,
+  },
+})
+lsp.setup()
+
 -- TypeScript
-nvim_lsp.tsserver.setup {
-  on_attach = on_attach,
-  filetypes = { "typescript", "typescriptreact", "typescript.tsx" },
-  cmd = { "typescript-language-server", "--stdio" }
-}
+nvim_lsp.tsserver.setup({})
+
+nvim_lsp.eslint.setup({})
