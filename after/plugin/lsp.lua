@@ -101,3 +101,11 @@ lsp.setup()
 nvim_lsp.tsserver.setup({})
 
 nvim_lsp.eslint.setup({})
+
+nvim_lsp.astro.setup({
+  on_attach = function(client)
+    if client.server_capabilities.documentFormattingProvider then
+      vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({ name = 'astro' })")
+    end
+  end,
+})
