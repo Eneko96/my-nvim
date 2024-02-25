@@ -8,7 +8,8 @@ lsp.ensure_installed({
   'rust_analyzer',
   'html',
   'cssls',
-  'jsonls'
+  'jsonls',
+  'prettier'
 })
 
 -- Fix Undefined global 'vim'
@@ -63,41 +64,31 @@ vim.diagnostic.config({
 
 local nvim_lsp = require("lspconfig")
 
-local null_ls = require('null-ls')
-
-
-local null_opts = lsp.build_options('null-ls', {
-  on_attach = function(client)
-    if client.server_capabilities.documentFormattingProvider then
-      vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({ name = 'null-ls' })")
-    end
-  end,
-})
-
-
-local formatting = null_ls.builtins.formatting
-local lint = null_ls.builtins.diagnostics
-local action = null_ls.builtins.code_actions
-
-null_ls.setup({
-  on_attach = null_opts.on_attach,
-  sources = {
-    -- formatting
-    formatting.prettier,
-    formatting.stylua, -- Lua
-
-    -- linting
-    lint.eslint,
-    lint.credo, -- Elixir
-    lint.rubocop, -- Ruby
-
-    -- code actions
-    action.eslint,
-  },
-})
 lsp.setup()
 
 -- TypeScript
 nvim_lsp.tsserver.setup({})
 
-nvim_lsp.eslint.setup({})
+
+nvim_lsp.eslint.setup({
+  -- Use eslint_d as eslint server
+  cmd = { "eslint_d", "--stdio" },
+  filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "markdown" },
+  root_dir = nvim_lsp.util.root_pattern(".git"),
+})
+
+nvim_lsp.prettier.setup({
+  cmd = { "prettierd", "--stdin-filepath", "%filepath" },
+  filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "markdown" },
+  root_dir = nvim_lsp.util.root_pattern(".git"),
+})
+
+nvim_lsp.astro.setup({})
+
+nvim_lsp.clangd.setup({
+  cmd = { "clangd", "--background-index" },
+  filetypes = { "c", "cpp", "objc", "objcpp" },
+  init_options = {
+    clangdFileStatus = true
+  }
+})
