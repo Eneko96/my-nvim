@@ -29,3 +29,18 @@ vim.opt.isfname:append("@-@")
 vim.opt.updatetime = 50
 
 vim.opt.colorcolumn = "80"
+
+vim.opt.guicursor = {
+  "n-v-c:block",
+  "i-ci-ve:ver25",
+  "r-cr:hor20",
+  "o:hor50",
+  "a:blinkon0",
+  "sm:block-blinkwait175-blinkoff150-blinkon175",
+  "a:blinkwait700-blinkoff400-blinkon250"
+}
+
+-- Folding settings
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.o.foldlevel = 99  -- Do not fold by default

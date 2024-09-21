@@ -16,7 +16,7 @@ lsp.nvim_workspace()
 
 
 local cmp = require('cmp')
-local cmp_select = {behavior = cmp.SelectBehavior.Select}
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
 local cmp_mappings = lsp.defaults.cmp_mappings({
   ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
   ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
@@ -32,17 +32,17 @@ lsp.setup_nvim_cmp({
 })
 
 lsp.set_preferences({
-    suggest_lsp_servers = false,
-    sign_icons = {
-        error = 'E',
-        warn = 'W',
-        hint = 'H',
-        info = 'I'
-    }
+  suggest_lsp_servers = false,
+  sign_icons = {
+    error = 'E',
+    warn = 'W',
+    hint = 'H',
+    info = 'I'
+  }
 })
 
 lsp.on_attach(function(client, bufnr)
-  local opts = {buffer = bufnr, remap = false}
+  local opts = { buffer = bufnr, remap = false }
 
   vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts)
   vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts)
@@ -58,49 +58,27 @@ end)
 
 
 vim.diagnostic.config({
-    virtual_text = true
+  virtual_text = true
 })
 
 local nvim_lsp = require("lspconfig")
 
-local null_ls = require('null-ls')
-
-
-local null_opts = lsp.build_options('null-ls', {
-  on_attach = function(client)
-    if client.server_capabilities.documentFormattingProvider then
-      vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({ name = 'null-ls' })")
-    end
-  end,
-})
-
-
-local formatting = null_ls.builtins.formatting
-local lint = null_ls.builtins.diagnostics
-local action = null_ls.builtins.code_actions
-
-null_ls.setup({
-  on_attach = null_opts.on_attach,
-  sources = {
-    -- formatting
-    formatting.prettier,
-    formatting.stylua, -- Lua
-
-    -- linting
-    lint.eslint,
-    lint.credo, -- Elixir
-    lint.rubocop, -- Ruby
-
-    -- code actions
-    action.eslint,
-  },
-})
 lsp.setup()
 
 -- TypeScript
-nvim_lsp.tsserver.setup({})
+nvim_lsp.tsserver.setup({
+  on_attach = lsp.on_attach,
+  capabilities = lsp.capabilities
+})
 
-nvim_lsp.eslint.setup({})
+nvim_lsp.eslint.setup({
+  on_attach = function(client)
+    if client.resolved_capabilities then
+      client.resolved_capabilities.document_formatting = true
+    end
+  end,
+  capabilities = lsp.capabilities
+})
 
 nvim_lsp.astro.setup({
   on_attach = function(client)
@@ -108,4 +86,22 @@ nvim_lsp.astro.setup({
       vim.cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.format({ name = 'astro' })")
     end
   end,
+})
+
+nvim_lsp.cucumber_language_server.setup({
+  settings = {
+    cucumber = {
+      features = {
+        '**/*.feature'
+      },
+      glue = {
+        '**/Features/StepDefinitions/**/*.js'
+      }
+    }
+  },
+  on_attach = function(client)
+    if client.resolved_capabilities then
+      client.resolved_capabilities.document_formatting = true
+    end
+  end
 })

@@ -4,7 +4,7 @@ return require("packer").startup(function(use)
   use 'wbthomason/packer.nvim'
 
   use {
-    'nvim-telescope/telescope.nvim', tag = '0.1.1',
+    'nvim-telescope/telescope.nvim',
     requires = { { 'nvim-lua/plenary.nvim' } }
   }
   use { "catppuccin/nvim", as = "catppuccin" }
@@ -13,7 +13,15 @@ return require("packer").startup(function(use)
   use('theprimeagen/harpoon')
   use('mbbill/undotree')
   use('tpope/vim-fugitive')
+  use("f-person/git-blame.nvim", {
+    config = function()
+      require("git-blame").setup({
+        enable = true
+      })
+    end,
+  })
   use('github/copilot.vim')
+  use('tpope/vim-commentary')
   use {
     'VonHeikemen/lsp-zero.nvim',
     branch = 'v2.x',
@@ -22,13 +30,20 @@ return require("packer").startup(function(use)
       { 'neovim/nvim-lspconfig' }, -- Required
       {                            -- Optional
         'williamboman/mason.nvim',
+        opts = {
+          ensure_installed = {
+            'prettierd',
+            'eslint-lsp',
+            'typescript-language-server',
+          },
+        },
         run = function()
           pcall(vim.cmd, 'MasonUpdate')
         end,
       },
       { 'williamboman/mason-lspconfig.nvim' }, -- Optional
 
-      { 'jose-elias-alvarez/null-ls.nvim' },
+      { "nvimtools/none-ls.nvim" },
 
       -- Autocompletion
       { 'hrsh7th/nvim-cmp' },     -- Required
@@ -43,9 +58,17 @@ return require("packer").startup(function(use)
       { 'rafamadriz/friendly-snippets' },
     }
   }
-  use 'm4xshen/autoclose.nvim'
   use {
     'nvim-lualine/lualine.nvim',
     requires = { 'nvim-tree/nvim-web-devicons', opt = true }
+  }
+  use {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    config = function()
+      require("nvim-autopairs").setup {
+        ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+      }
+    end
   }
 end)
